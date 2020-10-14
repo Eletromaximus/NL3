@@ -28,7 +28,7 @@ function pages () {
       </aside>
 
        
-      <Map center={[-16.7394452,-49.2706626]}
+      <Map center={[-16.6302977,-49.327215]}
         zoom={15}
         style={{width: '100%', height: '100%'}} 
       >
