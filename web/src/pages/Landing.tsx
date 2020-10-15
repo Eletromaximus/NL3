@@ -3,9 +3,9 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { FiArrowDownRight } from 'react-icons/fi'
 
-import logoImg from '../imagens/logo.svg'
+import logoImg from '../images/logo.svg'
 
-import '../styles/Pages/landing.css'
+import '../styles/pages/landing.css'
 
 export default function Lading () {
   return (
