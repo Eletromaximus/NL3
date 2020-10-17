@@ -21,6 +21,7 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "camelcase": "off"
+        "camelcase": "off",
+        "no-use-before-define":"off"
     }
 }
