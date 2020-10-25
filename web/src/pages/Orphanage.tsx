@@ -48,7 +48,7 @@ export default function Orphanage () {
 
       <main>
         <div className="orphanage-details">
-        ({orphanage.images} !== undefined) ? <img src={orphanage.images[activeImageIndex].url} alt={orphanage.name} />: null
+          { (orphanage.images !== undefined) ? <img src={orphanage.images[activeImageIndex].url} alt={orphanage.name} /> : null }
           <div className="images">
             {orphanage.images.map((image, index) => {
               return (
