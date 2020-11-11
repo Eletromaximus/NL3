@@ -1,9 +1,10 @@
 // eslint-disable-next-line no-use-before-define
-import React, { ChangeEvent, FormEvent, useState } from 'react'
+import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import { Map, Marker, TileLayer } from 'react-leaflet'
 import { LeafletMouseEvent } from 'leaflet'
 import { FiPlus } from 'react-icons/fi'
 import { useHistory } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
 
 import '../styles/pages/create-orphanage.css'
 
@@ -11,27 +12,52 @@ import Sidebar from '../components/Sidebar'
 import mapIcon from '../utils/mapIcon'
 import api from '../services/api'
 
+interface Props {
+  latitude: number,
+  longitude: number,
+  instructions: string,
+  about: string,
+  name: string,
+  opening_hours: string,
+  open_on_weekends: boolean,
+ // images: File[],
+  // previewImages: string[]
+}
+
 export default function CreateOrphanage () {
-  const history = useHistory()
+  // const history = useHistory()
+  const { register, handleSubmit, setValue } = useForm({
+    defaultValues: {
+      latitude: 0,
+      longitude: 0,
+      instructions: '',
+      about: '',
+      name: '',
+      opening_hours: '',
+      open_on_weekends: true
+    }
+  })
 
   const [position, setPosition] = useState({ latitude: 0, longitude: 0 })
 
-  const [about, setAbout] = useState('')
-  const [instructions, setInstructions] = useState('')
-  const [name, setName] = useState('')
-  const [opening_hours, setOpening_hours] = useState('')
+  // const [about, setAbout] = useState('')
+  // const [instructions, setInstructions] = useState('')
+  // const [name, setName] = useState('')
+  // const [opening_hours, setOpening_hours] = useState('')
   const [open_on_weekends, setOpen_on_weekends] = useState(true)
-  const [images, setImages] = useState<File[]>([])
-  const [previewImages, setPreviewImages] = useState<string[]>([])
 
   function handleMapClick (event: LeafletMouseEvent) {
     const { lat, lng } = event.latlng
     setPosition({
       latitude: lat,
       longitude: lng
-
-    }); console.log(position)
+    })
+    setValue('latitude', lat)
+    setValue('longitude', lng)
   }
+
+  /* const [images, setImages] = useState<File[]>([])
+  const [previewImages, setPreviewImages] = useState<string[]>([])
 
   function handleSelectImages (event: ChangeEvent<HTMLInputElement>) {
     if (!event.target.files) {
@@ -74,13 +100,15 @@ export default function CreateOrphanage () {
 
     history.push('/app')
   }
+*/
+  const onSubmit = (data: Props) => { return console.log(data) }
 
   return (
     <div id="page-create-orphanage">
       <Sidebar />
 
       <main>
-        <form onSubmit={handleSubmit} className="create-orphanage-form">
+        <form onSubmit={handleSubmit(onSubmit)} className="create-orphanage-form">
           <fieldset>
             <legend>Dados</legend>
 
@@ -108,8 +136,8 @@ export default function CreateOrphanage () {
               <label htmlFor="name">Nome</label>
               <input
                 id="name"
-                value={name}
-                onChange={event => setName(event.target.value)}
+                name="name"
+                ref={register({ required: true })}
               />
 
             </div>
@@ -117,30 +145,13 @@ export default function CreateOrphanage () {
             <div className="input-block">
               <label htmlFor="about">Sobre <span>Máximo de 300 caracteres</span></label>
               <textarea
-                id="name"
+                id="about"
+                name="about"
                 maxLength={300}
-                value={about}
-                onChange={event => setAbout(event.target.value)}
+                ref={register({ required: true })}
               />
             </div>
 
-            <div className="input-block">
-              <label htmlFor="images">Fotos</label>
-
-              <div className="images-container">
-                {previewImages.map(image => {
-                  return (
-                    <img key={image} src={image} alt={name}/>
-                  )
-                })}
-
-                <label htmlFor="image[]" className="new-image">
-                  <FiPlus size={24} color="#15b6d6" />
-                </label>
-              </div>
-
-              <input multiple onChange={handleSelectImages} type="file" id="image[]"/>
-            </div>
           </fieldset>
 
           <fieldset>
@@ -149,9 +160,9 @@ export default function CreateOrphanage () {
             <div className="input-block">
               <label htmlFor="instructions">Instruções</label>
               <textarea
+                name="instructions"
                 id="instructions"
-                value={instructions}
-                onChange={event => setInstructions(event.target.value)}
+                ref={register({ required: true })}
               />
             </div>
 
@@ -159,8 +170,8 @@ export default function CreateOrphanage () {
               <label htmlFor="opening_hours">Horário de funcionamento</label>
               <input
                 id="opening_hours"
-                value={opening_hours}
-                onChange={event => setOpening_hours(event.target.value)}
+                name="opening_hours"
+                ref={register({ required: true })}
               />
             </div>
 
@@ -171,14 +182,20 @@ export default function CreateOrphanage () {
                 <button
                   type="button"
                   className={open_on_weekends ? 'active' : ''}
-                  onClick={() => setOpen_on_weekends(true)}
+                  onClick={() => {
+                    setValue('open_on_weekends', true)
+                    setOpen_on_weekends(true)
+                  }}
                 >
                     Sim
                 </button>
                 <button
                   type="button"
                   className={!open_on_weekends ? 'active' : ''}
-                  onClick={() => setOpen_on_weekends(false)}
+                  onClick={() => {
+                    setValue('open_on_weekends', false)
+                    setOpen_on_weekends(false)
+                  }}
                 >
                   Não
                 </button>
