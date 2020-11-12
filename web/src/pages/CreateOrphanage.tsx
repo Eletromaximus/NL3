@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-use-before-define
-import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react'
+import React, { ChangeEvent, useState } from 'react'
 import { Map, Marker, TileLayer } from 'react-leaflet'
 import { LeafletMouseEvent } from 'leaflet'
 import { FiPlus } from 'react-icons/fi'
@@ -20,13 +20,15 @@ interface Props {
   name: string,
   opening_hours: string,
   open_on_weekends: boolean,
- // images: File[],
-  // previewImages: string[]
+  images: File[],
 }
 
 export default function CreateOrphanage () {
-  // const history = useHistory()
-  const { register, handleSubmit, setValue } = useForm({
+  const history = useHistory()
+  const [position, setPosition] = useState({ latitude: 0, longitude: 0 })
+  const [open_on_weekends, setOpen_on_weekends] = useState(true)
+  const [name, setName] = useState('')
+  const { register, handleSubmit, setValue, errors } = useForm({
     defaultValues: {
       latitude: 0,
       longitude: 0,
@@ -34,17 +36,10 @@ export default function CreateOrphanage () {
       about: '',
       name: '',
       opening_hours: '',
-      open_on_weekends: true
+      open_on_weekends: true,
+      images: []
     }
   })
-
-  const [position, setPosition] = useState({ latitude: 0, longitude: 0 })
-
-  // const [about, setAbout] = useState('')
-  // const [instructions, setInstructions] = useState('')
-  // const [name, setName] = useState('')
-  // const [opening_hours, setOpening_hours] = useState('')
-  const [open_on_weekends, setOpen_on_weekends] = useState(true)
 
   function handleMapClick (event: LeafletMouseEvent) {
     const { lat, lng } = event.latlng
@@ -52,11 +47,9 @@ export default function CreateOrphanage () {
       latitude: lat,
       longitude: lng
     })
-    setValue('latitude', lat)
-    setValue('longitude', lng)
   }
 
-  /* const [images, setImages] = useState<File[]>([])
+  const [images, setImages] = useState<File[]>([])
   const [previewImages, setPreviewImages] = useState<string[]>([])
 
   function handleSelectImages (event: ChangeEvent<HTMLInputElement>) {
@@ -67,6 +60,7 @@ export default function CreateOrphanage () {
     const selectedImages = Array.from(event.target.files)
 
     setImages(selectedImages)
+    setValue('images', selectedImages)
 
     const selectedImagesPreview = selectedImages.map(image => {
       return URL.createObjectURL(image)
@@ -75,33 +69,33 @@ export default function CreateOrphanage () {
     setPreviewImages(selectedImagesPreview)
   }
 
-  async function handleSubmit (event: FormEvent) {
-    event.preventDefault()
-
+  const onSubmit = async (data: Props) => {
     const { latitude, longitude } = position
 
-    const data = new FormData()
+    if (latitude !== 0 && longitude !== 0) {
+      const Form = new FormData()
 
-    data.append('name', name)
-    data.append('latitude', String(latitude))
-    data.append('longitude', String(longitude))
-    data.append('about', about)
-    data.append('instructions', instructions)
-    data.append('opening_hours', opening_hours)
-    data.append('open_on_weekends', String(open_on_weekends))
+      Form.append('name', data.name)
+      Form.append('latitude', String(latitude))
+      Form.append('longitude', String(longitude))
+      Form.append('about', data.about)
+      Form.append('instructions', data.instructions)
+      Form.append('opening_hours', data.opening_hours)
+      Form.append('open_on_weekends', String(open_on_weekends))
 
-    images.forEach(image => {
-      data.append('images', image)
-    })
+      images.forEach(image => {
+        Form.append('images', image)
+      })
 
-    await api.post('orphanages', data)
+      await api.post('orphanages', Form)
 
-    alert('Cadastro realizado com sucesso')
+      alert('Cadastro realizado com sucesso')
 
-    history.push('/app')
+      history.push('/app')
+    } else {
+      alert(' Indique no mapa a localização do orfanato ')
+    }
   }
-*/
-  const onSubmit = (data: Props) => { return console.log(data) }
 
   return (
     <div id="page-create-orphanage">
@@ -138,7 +132,10 @@ export default function CreateOrphanage () {
                 id="name"
                 name="name"
                 ref={register({ required: true })}
+                value={name}
+                onChange={event => setName(event.target.value)}
               />
+              {errors.name?.type === 'required' && (<p> Por favor, coloque o nome do orfanato </p>)}
 
             </div>
 
@@ -150,6 +147,26 @@ export default function CreateOrphanage () {
                 maxLength={300}
                 ref={register({ required: true })}
               />
+            </div>
+            {errors.about?.type === 'required' && <p> Por favor, descreva algo relevante sobre orfanato </p> }
+
+            <div className="input-block">
+              <label htmlFor="images">Fotos</label>
+
+              <div className="images-container">
+                {previewImages.map(image => {
+                  return (
+                    <img key={image} src={image} alt={name}/>
+                  )
+                })}
+
+                <label htmlFor="image[]" className="new-image">
+                  <FiPlus size={24} color="#15b6d6" />
+                </label>
+              </div>
+              {errors.images && <p> Por favor, insira alguma(s) fotos do orfanato </p> }
+
+              <input multiple ref={register({ required: true })} onChange={handleSelectImages} type="file" id="image[]"/>
             </div>
 
           </fieldset>
@@ -164,6 +181,7 @@ export default function CreateOrphanage () {
                 id="instructions"
                 ref={register({ required: true })}
               />
+              {errors.instructions?.type === 'required' && <p> Detalhe os procedimentos e os contatos do orfanato </p> }
             </div>
 
             <div className="input-block">
@@ -173,6 +191,7 @@ export default function CreateOrphanage () {
                 name="opening_hours"
                 ref={register({ required: true })}
               />
+              {errors.opening_hours?.type === 'required' && <p> Por favor, descreva algo relevante sobre orfanato </p> }
             </div>
 
             <div className="input-block">
@@ -211,5 +230,3 @@ export default function CreateOrphanage () {
     </div>
   )
 }
-
-// return `https://a.tile.openstreetmap.org/${z}/${x}/${y}.png`;
